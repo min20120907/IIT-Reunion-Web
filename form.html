@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>淡江大學資創系校友重聚會圖片上傳系統</title>
+</head>
+<body>
+	{% if name == "" %}
+	<form method="get">
+		<input type="file" id="img" name="img1" accept="image/*">
+		<input type="file" id="img" name="img2" accept="image/*">
+		<input type="text" name="user">
+		<input type="text" name="UUID">
+		<input type="submit" name="send" value="送出">
+	</form>
+	{% else %}
+	<p>上傳成功</p>
+	{% endif %}
+</body>
+</html>
+
