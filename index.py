@@ -33,6 +33,13 @@ def query(email):
     data = cur.fetchall()
     return data
 
+def getUUID(email):
+    sql = "SELECT UUID FROM Photos WHERE Email='"+str(email+"'")
+    cur = mysql.connection.cursor()
+    cur.execute(sql)
+    data = cur.fetchall()
+    return data[0]
+
 def update(UUID,img1, img2):
     sql = "UPDATE Photos SET PIC_1=%s, PIC_2=%s WHERE UUID=%s";
     cur = mysql.connection.cursor()
@@ -51,24 +58,28 @@ def index():
     if request.method == 'POST':
         if request.values['send']=='送出':
             email = request.values['email']
-            print(query(email))
             img1 = request.files['img1']
             img2 = request.files['img2']
-            # Save image1
-            if img1 and allowed_file(img1.filename):
-                filename = secure_filename(img1.filename)
-                print(filename)
-                img1.save(os.path.join(app.config['UPLOAD_FOLDER'], 
-                                   filename))
-            # Save image2
-            if img2 and allowed_file(img2.filename):
-                filename = secure_filename(img2.filename)
-                print(filename)
-                img2.save(os.path.join(app.config['UPLOAD_FOLDER'],
-                                   filename))
-
             uuid = request.values['UUID']
-            insert(("ssfdsdfsdsdfsfd",email,img1,img2))
+            # Check whether the data is existed
+            query_r = query(email)
+            if query == None or uuid == getUUID(email):
+                
+                # Save image1
+                if img1 and allowed_file(img1.filename):
+                    filename = secure_filename(img1.filename)
+                    print(filename)
+                    img1.save(os.path.join(app.config['UPLOAD_FOLDER'], 
+                                       filename))
+                # Save image2
+                if img2 and allowed_file(img2.filename):
+                    filename = secure_filename(img2.filename)
+                    print(filename)
+                    img2.save(os.path.join(app.config['UPLOAD_FOLDER'],
+                                       filename))
+
+                uuid = request.values['UUID']
+                insert(("ssfdsdfsdsdfsfd",email,img1,img2))
 
     return render_template("form.html")
 
