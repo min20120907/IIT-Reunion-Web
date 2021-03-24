@@ -40,8 +40,23 @@ def getUUID(email):
     data = cur.fetchall()
     return data[0]
 
+def getPic1(UUID):
+    sql = "SELECT PIC_1 FROM Photos WHERE UUID="+str(UUID)
+    cur =mysql.connection.cursor()
+    cur.execute(sql)
+    data = cur.fetchall()
+    return data[0]
+
+def getPic2(UUID):
+    sql = "SELECT PIC_2 FROM Photos WHERE UUID="+str(UUID)
+    cur =mysql.connection.cursor()
+    cur.execute(sql)
+    data = cur.fetchall()
+    return data[0]
+    
+
 def update(UUID,img1, img2):
-    sql = "UPDATE Photos SET PIC_1=%s, PIC_2=%s WHERE UUID=%s";
+    sql = "UPDATE Photos SET PIC_1=%s, PIC_2=%s WHERE UUID=%s"
     cur = mysql.connection.cursor()
     cur.execute(sql, (img1,img2,UUID))
     mysql.connection.commit()
@@ -60,27 +75,36 @@ def index():
             email = request.values['email']
             img1 = request.files['img1']
             img2 = request.files['img2']
-            uuid = request.values['UUID']
+            uuid_usr = request.values['UUID']
             # Check whether the data is existed
             query_r = query(email)
-            if query == None or uuid == getUUID(email):
-                
+            if query == None:
                 # Save image1
                 if img1 and allowed_file(img1.filename):
-                    filename = secure_filename(img1.filename)
+                    filename = secure_filename(str(uuid.uuid5())+"."+img1.filename.rsplit('.', 1)[1])
                     print(filename)
                     img1.save(os.path.join(app.config['UPLOAD_FOLDER'], 
                                        filename))
                 # Save image2
-                if img2 and allowed_file(img2.filename):
-                    filename = secure_filename(img2.filename)
+                if img2 and allowed_file():
+                    filename = secure_filename(str(uuid.uuid5())+"."+img2.filename.rsplit('.', 1)[1])
                     print(filename)
                     img2.save(os.path.join(app.config['UPLOAD_FOLDER'],
                                        filename))
-
-                uuid = request.values['UUID']
-                insert(("ssfdsdfsdsdfsfd",email,img1,img2))
-
+                insert((str(uuid.uuid5()),email,img1,img2))
+            elif uuid_usr == getUUID(email):
+                # Save image1
+                if img1 and allowed_file(img1.filename):
+                    filename = secure_filename(getPic1(uuid_usr)+"."+img1.filename.rsplit('.', 1)[1])
+                    print(filename)
+                    img1.save(os.path.join(app.config['UPLOAD_FOLDER'], 
+                                       filename))
+                # Save image2
+                if img2 and allowed_file():
+                    filename = secure_filename(getPic2(uuid_usr)+"."+img2.filename.rsplit('.', 1)[1])
+                    print(filename)
+                    img2.save(os.path.join(app.config['UPLOAD_FOLDER'],
+                update(uuid_usr, img1, img2) 
     return render_template("form.html")
 
 if __name__ == '__main__':
