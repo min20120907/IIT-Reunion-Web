@@ -5,12 +5,12 @@
 <title>淡江大學資創系校友重聚會圖片上傳系統</title>
 </head>
 <body>
-	<form method="post">
-		<input type="file" id="img" name="img1" accept="image/*">
-		<input type="file" id="img" name="img2" accept="image/*">
-		<input type="text" name="user">
-		<input type="text" name="UUID">
-		<input type="submit" name="send" value="送出">
+	<form method="post" enctype=multipart/form-data>
+		<p>Image 1:</p><input type="file" id="img" name="img1" accept="image/*"><br/>
+		<p>Image 2:</p> <input type="file" id="img" name="img2" accept="image/*"><br/>
+		<p>Email: </p><input type="text" name="email"><br/>
+		<p>UUID: </p><input type="text" name="UUID"><br/>
+		<input type="submit" name="send" value="送出"><br/>
 	</form>
 </body>
 </html>
