@@ -89,6 +89,10 @@ def index():
             email = request.values['email']
             img1 = request.files['img1']
             img2 = request.files['img2']
+            name = request.values['name']
+            grade = request.values['grade']
+            department = request.values['department']
+
             img1_p = ""
             img2_p = ""
             uuid_usr = request.values['UUID']
