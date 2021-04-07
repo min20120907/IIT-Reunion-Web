@@ -69,14 +69,14 @@ def getPic2(UUID):
     return data[0][0]
     
 
-def update(UUID,img1, img2):
-    sql = "UPDATE Photos SET PIC_1=%s, PIC_2=%s WHERE UUID=%s"
+def update(UUID,img1, img2,name,grade,department):
+    sql = "UPDATE Photos SET PIC_1=%s, PIC_2=%s, name=%s, grade=%s, department=%s WHERE UUID=%s"
     cur = mysql.connection.cursor()
-    cur.execute(sql, (img1,img2,UUID))
+    cur.execute(sql, (img1,img2,UUID,name, grade,department))
     mysql.connection.commit()
 
 def insert(datas):
-    sql = 'INSERT INTO Photos (UUID,Email,PIC_1, PIC_2) VALUES (%s, %s, %s, %s)'
+    sql = 'INSERT INTO Photos (UUID,Email,PIC_1, PIC_2,name,grade,department) VALUES (%s, %s, %s, %s,%s,%s,%s)'
     cur = mysql.connection.cursor()
     cur.execute(sql, datas)
     mysql.connection.commit()
@@ -114,7 +114,7 @@ def index():
                     img2.save(os.path.join(app.config['UPLOAD_FOLDER'],
                                        filename))
                     img2_p = filename
-                insert((str(uuid.uuid4()),email,img1_p,img2_p)) 
+                insert((str(uuid.uuid4()),email,img1_p,img2_p,name,grade,department)) 
                 try:
                     server = smtplib.SMTP(smtp_server,port)
                     server.ehlo() # Can be omitted
@@ -148,7 +148,9 @@ def index():
                     img2.save(os.path.join(app.config['UPLOAD_FOLDER'],
                                        filename))
                     img2_p=filename
-                update(uuid_usr, img1_p, img2_p)
+                update(uuid_usr, img1_p, img2_p, name, grade, department)
+            elif uuid_usr != getUUID(email)[0][0]:
+                flash("Please Enter Your Email!!!")
                 
     return render_template("form.html")
 
