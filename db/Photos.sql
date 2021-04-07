@@ -34,7 +34,7 @@ CREATE TABLE `Photos` (
   `PIC_2` text NOT NULL,
   `Email` text NOT NULL,
   `UUID` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- 傾印資料表的資料 `Photos`

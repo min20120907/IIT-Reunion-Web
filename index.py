@@ -4,6 +4,18 @@ from flask_mysqldb import MySQL
 from werkzeug.utils import secure_filename
 import uuid
 import glob
+import smtplib, ssl
+
+smtp_server = "localhost"
+port = 25  # For starttls
+sender_email = "reunion@alumni.iit.tku.edu.tw"
+
+# Create a secure SSL context
+message = """\
+Subject: Verify Email
+
+Please enter the following UUID for the next uploads.
+UUID: """
 
 # Some format and sizes limits
 UPLOAD_FOLDER = '/imgs/'
@@ -18,8 +30,8 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 #MySQL
 app.config["MYSQL_HOST"] = "localhost"
-app.config["MYSQL_USER"] = "admin"
-app.config["MYSQL_PASSWORD"] = "jefflin123"
+app.config["MYSQL_USER"] = "reunion"
+app.config["MYSQL_PASSWORD"] = "password"
 app.config["MYSQL_DB"] = "IIT"
 mysql = MySQL(app)
 
@@ -73,7 +85,7 @@ def insert(datas):
 @app.route('/', methods=["POST","GET"])
 def index():
     if request.method == 'POST':
-        if request.values['send']=='送出':
+        if request.values['send']=='submit':
             email = request.values['email']
             img1 = request.files['img1']
             img2 = request.files['img2']
@@ -98,7 +110,17 @@ def index():
                     img2.save(os.path.join(app.config['UPLOAD_FOLDER'],
                                        filename))
                     img2_p = filename
-                insert((str(uuid.uuid4()),email,img1_p,img2_p))
+                insert((str(uuid.uuid4()),email,img1_p,img2_p)) 
+                try:
+                    server = smtplib.SMTP(smtp_server,port)
+                    server.ehlo() # Can be omitted
+                    server.sendmail(sender_email, email, message+str(uuid.uuid4()))
+                    # TODO: Send email here
+                except Exception as e:
+                    # Print any error messages to stdout
+                    print(e)
+                finally:
+                    server.quit() 
             elif uuid_usr == getUUID(email)[0][0]:
                 print("enter UUID")
                 print(img1)
@@ -123,8 +145,9 @@ def index():
                                        filename))
                     img2_p=filename
                 update(uuid_usr, img1_p, img2_p)
+                
     return render_template("form.html")
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0', ssl_context=("/etc/letsencrypt/live/alumni.iit.tku.edu.tw/fullchain.pem","/etc/letsencrypt/live/alumni.iit.tku.edu.tw/privkey.pem"), port=443)
 
