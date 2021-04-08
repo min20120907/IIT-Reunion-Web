@@ -1,5 +1,5 @@
 import os
-from flask import Flask, redirect, url_for, render_template, request
+from flask import Flask, redirect, url_for, render_template, request, flash
 from flask_mysqldb import MySQL
 from werkzeug.utils import secure_filename
 import uuid
@@ -87,12 +87,16 @@ def index():
     if request.method == 'POST':
         if request.values['send']=='submit':
             email = request.values['email']
-            img1 = request.files['img1']
-            img2 = request.files['img2']
+            try:
+                img1 = request.files['img1']
+                img2 = request.files['img2']
+            except:
+                img1=""
+                img2=""
             name = request.values['name']
             grade = request.values['grade']
             department = request.values['department']
-
+            print("Complete scanning")
             img1_p = ""
             img2_p = ""
             uuid_usr = request.values['UUID']
@@ -138,7 +142,7 @@ def index():
                     filename = secure_filename(str(getPic1(uuid_usr)).rsplit('.',1)[0]+"."+img1.filename.rsplit('.', 1)[1])
                     img1.save(os.path.join(app.config['UPLOAD_FOLDER'], 
                                        filename))
-                    img1_p=filename
+                    img1_p=filename or ''
                 # Save image2
                 if img2 and allowed_file(img2.filename):
                     print("removing img2")
@@ -147,13 +151,15 @@ def index():
                     filename = secure_filename(str(getPic2(uuid_usr)).rsplit('.',1)[0]+"."+img2.filename.rsplit('.', 1)[1])
                     img2.save(os.path.join(app.config['UPLOAD_FOLDER'],
                                        filename))
-                    img2_p=filename
+                    img2_p=filename or ''
                 update(uuid_usr, img1_p, img2_p, name, grade, department)
-            #elif uuid_usr != getUUID(email)[0][0]:
-             #   flash("Please Enter Your Email!!!")
+            elif uuid_usr != getUUID(email)[0][0]:
+                flash("Invalid UUID!!!", 'error')
                 
     return render_template("form.html")
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', ssl_context=("/etc/letsencrypt/live/alumni.iit.tku.edu.tw/fullchain.pem","/etc/letsencrypt/live/alumni.iit.tku.edu.tw/privkey.pem"), port=8000)
+    app.secret_key = 'super secret key'
+    app.config['SESSION_TYPE'] = 'filesystem'
+    app.run(debug=False,host='0.0.0.0', ssl_context=("/etc/letsencrypt/live/alumni.iit.tku.edu.tw/fullchain.pem","/etc/letsencrypt/live/alumni.iit.tku.edu.tw/privkey.pem"), port=8000)
 
