@@ -149,11 +149,11 @@ def index():
                                        filename))
                     img2_p=filename
                 update(uuid_usr, img1_p, img2_p, name, grade, department)
-            elif uuid_usr != getUUID(email)[0][0]:
-                flash("Please Enter Your Email!!!")
+            #elif uuid_usr != getUUID(email)[0][0]:
+             #   flash("Please Enter Your Email!!!")
                 
     return render_template("form.html")
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', ssl_context=("/etc/letsencrypt/live/alumni.iit.tku.edu.tw/fullchain.pem","/etc/letsencrypt/live/alumni.iit.tku.edu.tw/privkey.pem"), port=443)
+    app.run(host='0.0.0.0', ssl_context=("/etc/letsencrypt/live/alumni.iit.tku.edu.tw/fullchain.pem","/etc/letsencrypt/live/alumni.iit.tku.edu.tw/privkey.pem"), port=8000)
 
