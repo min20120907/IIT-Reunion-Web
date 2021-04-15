@@ -41,30 +41,30 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 def query(email):
-    sql = "SELECT PIC_1, PIC_2 FROM Photos WHERE Email='"+str(email+"'")
+    sql = "SELECT PIC_1, PIC_2 FROM Photos WHERE Email='%s'"
     cur = mysql.connection.cursor()
-    cur.execute(sql)
+    cur.execute(sql, (str(email)))
     data = cur.fetchall()
     return data
 
 def getUUID(email):
-    sql = "SELECT UUID FROM Photos WHERE Email='"+str(email+"'")
+    sql = "SELECT UUID FROM Photos WHERE Email='%s'")
     cur = mysql.connection.cursor()
-    cur.execute(sql)
+    cur.execute(sql, (str(email)))
     data = cur.fetchall()
     return data
 
 def getPic1(UUID):
-    sql = "SELECT PIC_1 FROM Photos WHERE UUID='"+str(UUID)+"'"
+    sql = "SELECT PIC_1 FROM Photos WHERE UUID='%s'"
     cur =mysql.connection.cursor()
-    cur.execute(sql)
+    cur.execute(sql, (UUID))
     data = cur.fetchall()
     return data[0][0]
 
 def getPic2(UUID):
-    sql = "SELECT PIC_2 FROM Photos WHERE UUID='"+str(UUID)+"'"
+    sql = "SELECT PIC_2 FROM Photos WHERE UUID='%s'"
     cur =mysql.connection.cursor()
-    cur.execute(sql)
+    cur.execute(sql, (UUID))
     data = cur.fetchall()
     return data[0][0]
     
