@@ -48,7 +48,7 @@ def query(email):
     return data
 
 def getUUID(email):
-    sql = "SELECT UUID FROM Photos WHERE Email='%s'")
+    sql = "SELECT UUID FROM Photos WHERE Email='%s'"
     cur = mysql.connection.cursor()
     cur.execute(sql, (str(email)))
     data = cur.fetchall()
