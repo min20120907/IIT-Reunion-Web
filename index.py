@@ -41,30 +41,30 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 def query(email):
-    sql = "SELECT PIC_1, PIC_2 FROM Photos WHERE Email='%s'"
+    sql = "SELECT PIC_1, PIC_2 FROM Photos WHERE Email=%s"
     cur = mysql.connection.cursor()
-    cur.execute(sql, (str(email)))
+    cur.execute(sql, [email])
     data = cur.fetchall()
     return data
 
 def getUUID(email):
-    sql = "SELECT UUID FROM Photos WHERE Email='%s'"
+    sql = "SELECT UUID FROM Photos WHERE Email=%s"
     cur = mysql.connection.cursor()
-    cur.execute(sql, (str(email)))
+    cur.execute(sql, [str(email)])
     data = cur.fetchall()
     return data
 
 def getPic1(UUID):
-    sql = "SELECT PIC_1 FROM Photos WHERE UUID='%s'"
+    sql = "SELECT PIC_1 FROM Photos WHERE UUID=%s"
     cur =mysql.connection.cursor()
-    cur.execute(sql, (UUID))
+    cur.execute(sql, [UUID])
     data = cur.fetchall()
     return data[0][0]
 
 def getPic2(UUID):
-    sql = "SELECT PIC_2 FROM Photos WHERE UUID='%s'"
+    sql = "SELECT PIC_2 FROM Photos WHERE UUID=%s"
     cur =mysql.connection.cursor()
-    cur.execute(sql, (UUID))
+    cur.execute(sql, [UUID])
     data = cur.fetchall()
     return data[0][0]
     
@@ -72,8 +72,9 @@ def getPic2(UUID):
 def update(UUID,img1, img2,name,grade,department):
     sql = "UPDATE Photos SET PIC_1=%s, PIC_2=%s, name=%s, grade=%s, department=%s WHERE UUID=%s"
     cur = mysql.connection.cursor()
-    cur.execute(sql, (img1,img2,UUID,name, grade,department))
+    cur.execute(sql, [img1,img2,name, grade,department,UUID])
     mysql.connection.commit()
+    print("updated data")
 
 def insert(datas):
     sql = 'INSERT INTO Photos (UUID,Email,PIC_1, PIC_2,name,grade,department) VALUES (%s, %s, %s, %s,%s,%s,%s)'
@@ -82,7 +83,7 @@ def insert(datas):
     mysql.connection.commit()
 
 
-@app.route('/', methods=["POST","GET"])
+@app.route('/2pics', methods=["POST","GET"])
 def index():
     if request.method == 'POST':
         if request.values['send']=='submit':
@@ -100,6 +101,7 @@ def index():
             img1_p = ""
             img2_p = ""
             uuid_usr = request.values['UUID']
+            tmp_uuid = str(uuid.uuid4())
             # print(uuid_usr)
             # print(getUUID(email))
             # Check whether the data is existed
@@ -108,54 +110,63 @@ def index():
                 print("no uuid")
                 # Save image1
                 if img1 and allowed_file(img1.filename):
-                    filename = secure_filename(str(uuid.uuid4())+"."+img1.filename.rsplit('.', 1)[1])
+                    filename = secure_filename(str(tmp_uuid)+"."+img1.filename.rsplit('.', 1)[1])
                     img1_p = filename
                     img1.save(os.path.join(app.config['UPLOAD_FOLDER'], 
                                        filename))
                 # Save image2
                 if img2 and allowed_file(img2.filename):
-                    filename = secure_filename(str(uuid.uuid4())+"."+img2.filename.rsplit('.', 1)[1])
+                    filename = secure_filename(str(tmp_uuid)+"."+img2.filename.rsplit('.', 1)[1])
                     img2.save(os.path.join(app.config['UPLOAD_FOLDER'],
                                        filename))
                     img2_p = filename
-                insert((str(uuid.uuid4()),email,img1_p,img2_p,name,grade,department)) 
+                insert([tmp_uuid,email,img1_p,img2_p,name,grade,department]) 
                 try:
                     server = smtplib.SMTP(smtp_server,port)
                     server.ehlo() # Can be omitted
-                    server.sendmail(sender_email, email, message+str(uuid.uuid4()))
+                    server.sendmail(sender_email, email, message+str(tmp_uuid))
                     # TODO: Send email here
                 except Exception as e:
                     # Print any error messages to stdout
                     print(e)
                 finally:
-                    server.quit() 
+                    server.quit()
             elif uuid_usr == getUUID(email)[0][0]:
                 print("enter UUID")
                 print(img1)
                 print(img2)
                 # Save image1
-                
                 if img1 and allowed_file(img1.filename):
-                    print("removing img1")
-                    os.remove(app.config['UPLOAD_FOLDER']+str(getPic1(uuid_usr)))
-                    print(app.config['UPLOAD_FOLDER']+str(getPic1(uuid_usr)))
-                    filename = secure_filename(str(getPic1(uuid_usr)).rsplit('.',1)[0]+"."+img1.filename.rsplit('.', 1)[1])
+                    try:
+                        print("removing img1")
+                        os.remove(app.config['UPLOAD_FOLDER']+str(getPic1(uuid_usr)))
+                        print(app.config['UPLOAD_FOLDER']+str(getPic1(uuid_usr)))
+                        filename = secure_filename(str(getPic1(uuid_usr)).rsplit('.',1)[0]+"."+img1.filename.rsplit('.', 1)[1])
+                    except:
+                        filename = secure_filename(str(uuid.uuid4()).rsplit('.',1)[0]+"."+img1.filename.rsplit('.', 1)[1])
+                        print("No Photos")
                     img1.save(os.path.join(app.config['UPLOAD_FOLDER'], 
                                        filename))
                     img1_p=filename or ''
                 # Save image2
                 if img2 and allowed_file(img2.filename):
-                    print("removing img2")
-                    os.remove(app.config['UPLOAD_FOLDER']+str(getPic2(uuid_usr)))
-                    print(app.config['UPLOAD_FOLDER']+str(getPic2(uuid_usr)))
-                    filename = secure_filename(str(getPic2(uuid_usr)).rsplit('.',1)[0]+"."+img2.filename.rsplit('.', 1)[1])
+                    if str(getPic2(uuid_usr)) !="":
+                        print("removing img2")
+                        try:
+                            os.remove(app.config['UPLOAD_FOLDER']+str(getPic2(uuid_usr)))
+                            filename = secure_filename(str(getPic2(uuid_usr)).rsplit('.',1)[0]+"."+img2.filename.rsplit('.', 1)[1])
+                        except:
+                            filename = secure_filename(str(uuid.uuid4()).rsplit('.',1)[0]+"."+img2.filename.rsplit('.', 1)[1])
+                            print("No Photos")
+                            pass
+                        print(app.config['UPLOAD_FOLDER']+str(getPic2(uuid_usr)))
                     img2.save(os.path.join(app.config['UPLOAD_FOLDER'],
                                        filename))
                     img2_p=filename or ''
                 update(uuid_usr, img1_p, img2_p, name, grade, department)
             elif uuid_usr != getUUID(email)[0][0]:
                 flash("Invalid UUID!!!", 'error')
-                
+                print(getUUID(email)[0][0])
     return render_template("form.html")
 
 if __name__ == '__main__':
