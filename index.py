@@ -101,7 +101,7 @@ def index():
             img1_p = ""
             img2_p = ""
             uuid_usr = request.values['UUID']
-            tmp_uuid = str(uuid.uuid4())
+            tmp_uuid = str(uuid.uuid4()).strip()
             # print(uuid_usr)
             # print(getUUID(email))
             # Check whether the data is existed
