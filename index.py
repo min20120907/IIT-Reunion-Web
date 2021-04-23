@@ -67,7 +67,28 @@ def getPic2(UUID):
     cur.execute(sql, [UUID])
     data = cur.fetchall()
     return data[0][0]
-    
+
+def getName(UUID):
+    sql = "SELECT name FROM Photos WHERE UUID=%s"
+    cur =mysql.connection.cursor()
+    cur.execute(sql, [UUID])
+    data = cur.fetchall()
+    return data[0][0]
+
+def getDep(UUID):
+    sql = "SELECT department FROM Photos WHERE UUID=%s"
+    cur =mysql.connection.cursor()
+    cur.execute(sql, [UUID])
+    data = cur.fetchall()
+    return data[0][0]
+
+def getGrade(UUID):
+    sql = "SELECT grade FROM Photos WHERE UUID=%s"
+    cur =mysql.connection.cursor()
+    cur.execute(sql, [UUID])
+    data = cur.fetchall()
+    return data[0][0]
+
 
 def update(UUID,img1, img2,name,grade,department):
     sql = "UPDATE Photos SET PIC_1=%s, PIC_2=%s, name=%s, grade=%s, department=%s WHERE UUID=%s"
@@ -99,6 +120,7 @@ def index():
             name = request.values['name'].strip()
             grade = request.values['grade']
             department = request.values['department']
+
             print("Complete scanning")
             img1_p = ""
             img2_p = ""
@@ -122,7 +144,10 @@ def index():
                     img2.save(os.path.join(app.config['UPLOAD_FOLDER'],
                                        filename))
                     img2_p = filename
-                insert([tmp_uuid,email,img1_p,img2_p,name,grade,department]) 
+                try:
+                    insert([tmp_uuid,email,img1_p,img2_p,name,grade,department]) 
+                except:
+                    flash("The form is not completed!!")
                 try:
                     server = smtplib.SMTP(smtp_server,port)
                     server.ehlo() # Can be omitted
@@ -173,7 +198,7 @@ def index():
                     img1_p = getPic1(uuid_usr)
                 if img2_p == "":
                     img2_p = getPic2(uuid_usr)
-                update(uuid_usr, img1_p, img2_p, name, grade, department)
+                update(uuid_usr, img1_p, img2_p, name or getName(uuid_usr), grade or getGrade(uuid_usr), department or getDep(uuid_usr))
                 print(img1_p)
                 print(img2_p)
             elif uuid_usr != getUUID(email)[0][0]:
