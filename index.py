@@ -169,6 +169,10 @@ def index():
                     except:
                         pass
                     img2_p=filename or ''
+                if img1_p == "":
+                    img1_p = getPic1(uuid_usr)
+                if img2_p == "":
+                    img2_p = getPic2(uuid_usr)
                 update(uuid_usr, img1_p, img2_p, name, grade, department)
                 print(img1_p)
                 print(img2_p)
