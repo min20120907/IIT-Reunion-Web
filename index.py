@@ -90,17 +90,19 @@ def index():
             email = request.values['email']
             try:
                 img1 = request.files['img1']
-                img2 = request.files['img2']
             except:
                 img1=""
+            try:
+                img2 = request.files['img2']
+            except:
                 img2=""
-            name = request.values['name']
+            name = request.values['name'].strip()
             grade = request.values['grade']
             department = request.values['department']
             print("Complete scanning")
             img1_p = ""
             img2_p = ""
-            uuid_usr = request.values['UUID']
+            uuid_usr = request.values['UUID'].strip()
             tmp_uuid = str(uuid.uuid4()).strip()
             # print(uuid_usr)
             # print(getUUID(email))
@@ -137,6 +139,7 @@ def index():
                 print(img2)
                 # Save image1
                 if img1 and allowed_file(img1.filename):
+                    filename=""
                     try:
                         print("removing img1")
                         os.remove(app.config['UPLOAD_FOLDER']+str(getPic1(uuid_usr)))
@@ -145,25 +148,30 @@ def index():
                     except:
                         filename = secure_filename(str(uuid.uuid4()).rsplit('.',1)[0]+"."+img1.filename.rsplit('.', 1)[1])
                         print("No Photos")
-                    img1.save(os.path.join(app.config['UPLOAD_FOLDER'], 
-                                       filename))
+                    try:
+                        img1.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                    except:
+                        pass
                     img1_p=filename or ''
                 # Save image2
                 if img2 and allowed_file(img2.filename):
-                    if str(getPic2(uuid_usr)) !="":
-                        print("removing img2")
-                        try:
-                            os.remove(app.config['UPLOAD_FOLDER']+str(getPic2(uuid_usr)))
-                            filename = secure_filename(str(getPic2(uuid_usr)).rsplit('.',1)[0]+"."+img2.filename.rsplit('.', 1)[1])
-                        except:
-                            filename = secure_filename(str(uuid.uuid4()).rsplit('.',1)[0]+"."+img2.filename.rsplit('.', 1)[1])
-                            print("No Photos")
-                            pass
-                        print(app.config['UPLOAD_FOLDER']+str(getPic2(uuid_usr)))
-                    img2.save(os.path.join(app.config['UPLOAD_FOLDER'],
-                                       filename))
+                    filename=""
+                    print("removing img2")
+                    try:
+                        os.remove(app.config['UPLOAD_FOLDER']+str(getPic2(uuid_usr)))
+                        filename = secure_filename(str(getPic2(uuid_usr)).rsplit('.',1)[0]+"."+img2.filename.rsplit('.', 1)[1])
+                    except:
+                        filename = secure_filename(str(uuid.uuid4()).rsplit('.',1)[0]+"."+img2.filename.rsplit('.', 1)[1])
+                        print("No Photos")
+                    print(app.config['UPLOAD_FOLDER']+str(getPic2(uuid_usr)))
+                    try:
+                        img2.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
+                    except:
+                        pass
                     img2_p=filename or ''
                 update(uuid_usr, img1_p, img2_p, name, grade, department)
+                print(img1_p)
+                print(img2_p)
             elif uuid_usr != getUUID(email)[0][0]:
                 flash("Invalid UUID!!!", 'error')
                 print(getUUID(email)[0][0])
