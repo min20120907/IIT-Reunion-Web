@@ -1,4 +1,6 @@
 import os
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask import Flask, redirect, url_for, render_template, request, flash
 from flask_mysqldb import MySQL
 from werkzeug.utils import secure_filename
@@ -19,11 +21,16 @@ UUID: """
 
 # Some format and sizes limits
 UPLOAD_FOLDER = '/imgs/'
-ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'PNG', 'JPG', 'JPEG'])
 MAX_CONTENT_LENGTH = 10*1024*1024   # 10MB
 
 # Actual initialization of web interface
-app = Flask(__name__)
+app = Flask(__name__, static_url_path="", static_folder="imgs")
+limiter = Limiter(
+    app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"]
+)
 app.config['UPLOAD_FOLDER'] = os.getcwd() + UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
@@ -146,6 +153,7 @@ def index():
                     img2_p = filename
                 try:
                     insert([tmp_uuid,email,img1_p,img2_p,name,grade,department]) 
+                    return render_template("result.html", pic1=img1_p, pic2=img2_p, name=name, grade=grade, department=department)
                 except:
                     flash("The form is not completed!!")
                 try:
@@ -199,6 +207,7 @@ def index():
                 if img2_p == "":
                     img2_p = getPic2(uuid_usr)
                 update(uuid_usr, img1_p, img2_p, name or getName(uuid_usr), grade or getGrade(uuid_usr), department or getDep(uuid_usr))
+                return render_template("result.html", pic1=img1_p, pic2=img2_p, name=name or getName(uuid_usr), grade=grade or getGrade(uuid_usr), department=department or getDep(uuid_usr))
                 print(img1_p)
                 print(img2_p)
             elif uuid_usr != getUUID(email)[0][0]:
